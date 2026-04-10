@@ -3,853 +3,694 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>证件照尺寸 - 换底色+排版打印</title>
+    <title>证件照尺寸 - 换底色·改尺寸·自动排版</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #3498db;
-            --secondary: #2ecc71;
-            --accent: #f39c12;
+            --primary-dark: #2980b9;
+            --green: #2ecc71;
             --dark: #2d3436;
             --gray: #636e72;
-            --light: #f8f9fa;
-            --card-bg: rgba(255,255,255,0.98);
-            --shadow: 0 8px 32px rgba(0,0,0,0.08);
+            --light-gray: #b2bec3;
+            --bg: #f0f4f8;
+            --card: #ffffff;
+            --shadow: 0 4px 20px rgba(0,0,0,0.08);
+            --shadow-hover: 0 8px 32px rgba(0,0,0,0.14);
+            --radius: 16px;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Noto Sans SC', sans-serif;
-            background: linear-gradient(135deg, #3498db 0%, #2980b9 50%, #6dd5fa 100%);
+            background: var(--bg);
             min-height: 100vh;
-            padding: 0;
-            padding-bottom: 100px;
+            color: var(--dark);
         }
 
-        .container {
-            max-width: 480px;
-            margin: 0 auto;
-        }
-
-        /* Header */
+        /* ── Header ── */
         .header {
             background: linear-gradient(135deg, #3498db, #2980b9);
-            padding: 30px 20px;
-            color: white;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .header::before {
-            content: '📷';
-            position: absolute;
-            right: -10px;
-            top: -30px;
-            font-size: 140px;
-            opacity: 0.15;
-        }
-
-        .header h1 {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 6px;
-            position: relative;
-        }
-
-        .header p {
-            font-size: 13px;
-            opacity: 0.9;
-            position: relative;
-        }
-
-        /* Upload Section */
-        .upload-section {
-            padding: 20px;
-            margin-top: -20px;
-            position: relative;
-            z-index: 10;
-        }
-
-        .upload-card {
-            background: var(--card-bg);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: var(--shadow);
+            padding: 28px 20px 24px;
             text-align: center;
+            color: white;
         }
+        .header h1 { font-size: 24px; font-weight: 700; margin-bottom: 6px; }
+        .header p  { font-size: 13px; opacity: .9; }
 
-        .upload-area {
-            border: 3px dashed #bdc3c7;
-            border-radius: 16px;
-            padding: 40px 20px;
-            cursor: pointer;
-            transition: all 0.3s;
-            background: #fafafa;
+        /* ── Layout ── */
+        .main {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 24px 16px 80px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
         }
-
-        .upload-area:hover {
-            border-color: var(--primary);
-            background: #f0f8ff;
+        @media (max-width: 640px) {
+            .main { grid-template-columns: 1fr; }
         }
+        .full-width { grid-column: 1 / -1; }
 
-        .upload-area.dragover {
-            border-color: var(--primary);
-            background: #e8f4fd;
-        }
-
-        .upload-icon {
-            font-size: 48px;
-            margin-bottom: 12px;
-        }
-
-        .upload-text {
-            font-size: 15px;
-            color: var(--gray);
-        }
-
-        .upload-hint {
-            font-size: 12px;
-            color: #95a5a6;
-            margin-top: 8px;
-        }
-
-        #fileInput {
-            display: none;
-        }
-
-        /* Preview */
-        .preview-section {
-            padding: 20px;
-            display: none;
-        }
-
-        .preview-card {
-            background: var(--card-bg);
-            border-radius: 20px;
+        /* ── Card ── */
+        .card {
+            background: var(--card);
+            border-radius: var(--radius);
             padding: 20px;
             box-shadow: var(--shadow);
         }
-
-        .preview-container {
-            position: relative;
-            width: 100%;
-            max-width: 300px;
-            margin: 0 auto 20px;
-        }
-
-        .preview-image {
-            width: 100%;
-            border-radius: 12px;
-            display: block;
-        }
-
-        .preview-controls {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .preview-btn {
-            padding: 10px 20px;
-            border-radius: 25px;
-            border: 2px solid #e9ecef;
-            background: white;
-            font-size: 13px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
+        .card-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--gray);
+            margin-bottom: 14px;
             display: flex;
             align-items: center;
             gap: 6px;
         }
 
-        .preview-btn:hover {
-            border-color: var(--primary);
-            background: #f0f8ff;
-        }
-
-        .preview-btn.primary {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-
-        /* Size Selection */
-        .size-section {
-            padding: 0 20px;
-        }
-
-        .section-title {
-            font-size: 15px;
-            font-weight: 600;
-            color: white;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .size-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-        }
-
-        .size-option {
-            background: var(--card-bg);
-            border-radius: 14px;
-            padding: 14px;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: 2px solid transparent;
-            box-shadow: var(--shadow);
-        }
-
-        .size-option:hover {
-            transform: translateY(-2px);
-        }
-
-        .size-option.selected {
-            border-color: var(--primary);
-            background: #f0f8ff;
-        }
-
-        .size-name {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--dark);
-            margin-bottom: 4px;
-        }
-
-        .size-detail {
-            font-size: 11px;
-            color: var(--gray);
-        }
-
-        .size-badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 10px;
-            font-weight: 500;
-            margin-top: 6px;
-        }
-
-        .size-badge.red { background: #ffeaa7; color: #d63031; }
-        .size-badge.blue { background: #dff9fb; color: #0984e3; }
-        .size-badge.white { background: #dfe6e9; color: #2d3436; }
-
-        /* Background Color */
-        .bg-section {
-            padding: 20px;
-        }
-
-        .bg-grid {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-        }
-
-        .bg-option {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            cursor: pointer;
-            border: 3px solid transparent;
-            transition: all 0.2s;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        .bg-option:hover {
-            transform: scale(1.1);
-        }
-
-        .bg-option.selected {
-            border-color: var(--dark);
-            transform: scale(1.15);
-        }
-
-        .bg-white { background: white; }
-        .bg-blue { background: #3498db; }
-        .bg-red { background: #e74c3c; }
-        .bg-transparent { 
-            background: linear-gradient(45deg, #ccc 25%, transparent 25%),
-                        linear-gradient(-45deg, #ccc 25%, transparent 25%),
-                        linear-gradient(45deg, transparent 75%, #ccc 75%),
-                        linear-gradient(-45deg, transparent 75%, #ccc 75%);
-            background-size: 10px 10px;
-            background-position: 0 0, 0 5px, 5px -5px, -5px 0px;
-        }
-
-        /* Print Layout */
-        .print-section {
-            padding: 0 20px 20px;
-        }
-
-        .print-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-        }
-
-        .print-option {
-            background: var(--card-bg);
+        /* ── Upload ── */
+        .upload-area {
+            border: 2px dashed #b2bec3;
             border-radius: 12px;
-            padding: 12px 8px;
+            padding: 36px 20px;
             text-align: center;
             cursor: pointer;
-            transition: all 0.2s;
-            border: 2px solid transparent;
+            transition: all .25s;
+            background: #fafbfc;
         }
-
-        .print-option:hover {
-            transform: scale(1.02);
-        }
-
-        .print-option.selected {
+        .upload-area:hover, .upload-area.dragover {
             border-color: var(--primary);
-            background: #f0f8ff;
+            background: #eaf4fd;
         }
+        .upload-area .icon { font-size: 40px; margin-bottom: 10px; }
+        .upload-area .text { font-size: 15px; color: var(--gray); }
+        .upload-area .hint { font-size: 12px; color: var(--light-gray); margin-top: 6px; }
+        #fileInput { display: none; }
 
-        .print-name {
+        .preview-wrap { text-align: center; }
+        .preview-wrap img {
+            max-width: 100%;
+            max-height: 220px;
+            border-radius: 10px;
+            object-fit: contain;
+            border: 1px solid #e0e0e0;
+        }
+        .change-btn {
+            margin-top: 10px;
+            padding: 7px 18px;
+            border-radius: 20px;
+            border: 1.5px solid var(--primary);
+            background: white;
+            color: var(--primary);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all .2s;
+        }
+        .change-btn:hover { background: var(--primary); color: white; }
+
+        /* ── Option Grid (sizes / paper / bg / print) ── */
+        .option-grid {
+            display: grid;
+            gap: 8px;
+        }
+        .option-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+        .option-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+        .option-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+        .opt {
+            padding: 10px 8px;
+            border-radius: 10px;
+            border: 2px solid #e0e6ed;
+            background: #f8fafc;
+            cursor: pointer;
+            transition: all .2s;
+            text-align: center;
+            user-select: none;
+        }
+        .opt:hover { border-color: #74b9ff; background: #eaf4fd; }
+        .opt.selected {
+            border-color: var(--primary);
+            background: linear-gradient(135deg, #eaf4fd, #d6eaf8);
+            box-shadow: 0 0 0 3px rgba(52,152,219,.18);
+        }
+        .opt .opt-name {
             font-size: 13px;
             font-weight: 600;
             color: var(--dark);
         }
-
-        .print-detail {
+        .opt.selected .opt-name { color: var(--primary-dark); }
+        .opt .opt-sub {
+            font-size: 11px;
+            color: var(--light-gray);
+            margin-top: 3px;
+        }
+        .opt.selected .opt-sub { color: #5dade2; }
+        .opt .opt-badge {
+            display: inline-block;
+            margin-top: 5px;
+            padding: 1px 8px;
+            border-radius: 8px;
             font-size: 10px;
-            color: var(--gray);
-            margin-top: 2px;
+            background: #dff9fb;
+            color: #0984e3;
         }
+        .opt.selected .opt-badge { background: #2980b9; color: white; }
 
-        /* Action Buttons */
-        .actions {
-            padding: 20px;
+        /* ── Background color circles ── */
+        .bg-row {
             display: flex;
-            gap: 12px;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
         }
+        .bg-circle {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            box-shadow: 0 2px 8px rgba(0,0,0,.12);
+            transition: all .2s;
+            position: relative;
+        }
+        .bg-circle:hover { transform: scale(1.1); }
+        .bg-circle.selected {
+            border-color: var(--dark);
+            transform: scale(1.15);
+            box-shadow: 0 4px 14px rgba(0,0,0,.22);
+        }
+        .bg-circle.selected::after {
+            content: '✓';
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 700;
+        }
+        .bg-white  { background: #ffffff; border-color: #ddd !important; }
+        .bg-blue   { background: #3498db; }
+        .bg-red    { background: #e74c3c; }
+        .bg-white.selected::after  { color: #2d3436; }
+        .bg-blue.selected::after   { color: white; }
+        .bg-red.selected::after    { color: white; }
+        .bg-label { font-size: 12px; color: var(--gray); text-align: center; margin-top: 4px; }
+        .bg-item  { display: flex; flex-direction: column; align-items: center; }
 
-        .action-btn {
-            flex: 1;
-            padding: 14px;
+        /* ── Generate Button ── */
+        .gen-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            border: none;
             border-radius: 14px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .25s;
+            box-shadow: 0 4px 16px rgba(52,152,219,.35);
+        }
+        .gen-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(52,152,219,.45); }
+        .gen-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+        /* ── Result ── */
+        .result-wrap {
+            text-align: center;
+        }
+        .result-wrap canvas {
+            max-width: 100%;
+            border-radius: 10px;
+            border: 1px solid #e0e0e0;
+            box-shadow: var(--shadow);
+        }
+        .result-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 14px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .dl-btn {
+            padding: 10px 24px;
+            border-radius: 24px;
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all .2s;
             border: none;
         }
-
-        .action-btn.primary {
-            background: linear-gradient(135deg, var(--primary), #2980b9);
+        .dl-btn.primary {
+            background: linear-gradient(135deg, #3498db, #2980b9);
             color: white;
+            box-shadow: 0 4px 14px rgba(52,152,219,.3);
         }
-
-        .action-btn.secondary {
+        .dl-btn.secondary {
             background: white;
             color: var(--primary);
             border: 2px solid var(--primary);
         }
+        .dl-btn:hover { transform: scale(1.04); }
 
-        .action-btn:hover {
-            transform: scale(1.02);
+        /* ── Info table ── */
+        .info-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .info-table th {
+            background: #f0f4f8;
+            padding: 7px 10px;
+            text-align: left;
+            color: var(--gray);
+            font-weight: 500;
         }
-
-        /* Canvas for processing */
-        #canvas {
-            display: none;
+        .info-table td {
+            padding: 7px 10px;
+            border-bottom: 1px solid #f0f4f8;
+            color: var(--dark);
         }
+        .info-table tr:last-child td { border-bottom: none; }
 
-        /* Result */
-        .result-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.9);
-            z-index: 2000;
+        /* ── Loading overlay ── */
+        .loading {
+            position: fixed; inset: 0;
+            background: rgba(255,255,255,.85);
             display: none;
             align-items: center;
             justify-content: center;
             flex-direction: column;
+            z-index: 999;
         }
-
-        .result-modal.active {
-            display: flex;
+        .loading.show { display: flex; }
+        .spinner {
+            width: 48px; height: 48px;
+            border: 4px solid #e0e0e0;
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin .8s linear infinite;
         }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading p { margin-top: 14px; color: var(--gray); font-size: 14px; }
 
-        .result-image {
-            max-width: 90%;
-            max-height: 70%;
-            border-radius: 12px;
-        }
-
-        .result-actions {
+        /* ── Result info bar ── */
+        .result-info {
             display: flex;
             gap: 12px;
-            margin-top: 20px;
-        }
-
-        .result-btn {
-            padding: 12px 30px;
-            border-radius: 25px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            border: none;
-        }
-
-        .result-btn.primary {
-            background: var(--primary);
-            color: white;
-        }
-
-        .result-btn.secondary {
-            background: white;
-            color: var(--dark);
-        }
-
-        .result-close {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.2);
-            border: none;
-            color: white;
-            font-size: 20px;
-            cursor: pointer;
-        }
-
-        /* Common sizes info */
-        .sizes-info {
-            padding: 20px;
-        }
-
-        .info-card {
-            background: rgba(255,255,255,0.95);
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: var(--shadow);
-        }
-
-        .info-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--dark);
-            margin-bottom: 12px;
-        }
-
-        .info-list {
-            font-size: 12px;
-            color: var(--gray);
-            line-height: 1.8;
-        }
-
-        .info-list li {
-            margin-bottom: 6px;
-        }
-
-        /* Loading */
-        .loading {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(255,255,255,0.9);
-            display: none;
-            align-items: center;
+            flex-wrap: wrap;
             justify-content: center;
-            z-index: 3000;
-            flex-direction: column;
+            margin-top: 10px;
         }
-
-        .loading.active {
-            display: flex;
-        }
-
-        .loading-spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .loading-text {
-            margin-top: 16px;
-            font-size: 14px;
-            color: var(--gray);
+        .result-tag {
+            padding: 4px 12px;
+            border-radius: 12px;
+            background: #eaf4fd;
+            color: var(--primary-dark);
+            font-size: 12px;
+            font-weight: 500;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>📷 证件照尺寸</h1>
-            <p>换底色 · 改尺寸 · 排版打印</p>
-        </div>
 
-        <!-- Upload -->
-        <div class="upload-section">
-            <div class="upload-card">
-                <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
-                    <div class="upload-icon">🖼️</div>
-                    <div class="upload-text">点击上传照片</div>
-                    <div class="upload-hint">支持 JPG、PNG 格式</div>
-                </div>
-                <input type="file" id="fileInput" accept="image/*" onchange="handleFileSelect(event)">
-            </div>
-        </div>
+<div class="header">
+    <h1>📷 证件照尺寸</h1>
+    <p>换底色 · 精确裁剪 · 自动满铺排版</p>
+</div>
 
-        <!-- Preview -->
-        <div class="preview-section" id="previewSection">
-            <div class="preview-card">
-                <div class="preview-container">
-                    <img id="previewImage" class="preview-image" src="" alt="Preview">
-                </div>
-                <div class="preview-controls">
-                    <button class="preview-btn" onclick="document.getElementById('fileInput').click()">
-                        🔄 更换照片
-                    </button>
-                    <button class="preview-btn primary" onclick="processImage()">
-                        ✅ 确认处理
-                    </button>
-                </div>
-            </div>
-        </div>
+<div class="main">
 
-        <!-- Size Selection -->
-        <div class="size-section" id="sizeSection">
-            <div class="section-title">📐 选择尺寸</div>
-            <div class="size-grid">
-                <div class="size-option selected" data-size="1寸" data-width="25" data-height="35" onclick="selectSize(this)">
-                    <div class="size-name">1寸</div>
-                    <div class="size-detail">25×35mm</div>
-                    <span class="size-badge white">常用</span>
-                </div>
-                <div class="size-option" data-size="2寸" data-width="35" data-height="49" onclick="selectSize(this)">
-                    <div class="size-name">2寸</div>
-                    <div class="size-detail">35×49mm</div>
-                    <span class="size-badge white">常用</span>
-                </div>
-                <div class="size-option" data-size="小1寸" data-width="22" data-height="32" onclick="selectSize(this)">
-                    <div class="size-name">小1寸</div>
-                    <div class="size-detail">22×32mm</div>
-                    <span class="size-badge white">驾照</span>
-                </div>
-                <div class="size-option" data-size="大一寸" data-width="33" data-height="48" onclick="selectSize(this)">
-                    <div class="size-name">大一寸</div>
-                    <div class="size-detail">33×48mm</div>
-                    <span class="size-badge blue">身份证</span>
-                </div>
-                <div class="size-option" data-size="护照" data-width="33" data-height="48" onclick="selectSize(this)">
-                    <div class="size-name">护照</div>
-                    <div class="size-detail">33×48mm</div>
-                    <span class="size-badge red">白底</span>
-                </div>
-                <div class="size-option" data-size="美国签证" data-width="51" data-height="51" onclick="selectSize(this)">
-                    <div class="size-name">美国签证</div>
-                    <div class="size-detail">51×51mm</div>
-                    <span class="size-badge white">白底</span>
-                </div>
-                <div class="size-option" data-size="日本签证" data-width="45" data-height="45" onclick="selectSize(this)">
-                    <div class="size-name">日本签证</div>
-                    <div class="size-detail">45×45mm</div>
-                    <span class="size-badge white">白底</span>
-                </div>
-                <div class="size-option" data-size="简历照" data-width="35" data-height="45" onclick="selectSize(this)">
-                    <div class="size-name">简历照</div>
-                    <div class="size-detail">35×45mm</div>
-                    <span class="size-badge blue">蓝底</span>
-                </div>
-            </div>
+    <!-- ① 上传照片 -->
+    <div class="card">
+        <div class="card-title">① 上传照片</div>
+        <div id="uploadArea" class="upload-area" onclick="document.getElementById('fileInput').click()">
+            <div class="icon">🖼️</div>
+            <div class="text">点击或拖拽上传照片</div>
+            <div class="hint">支持 JPG / PNG</div>
         </div>
-
-        <!-- Background Color -->
-        <div class="bg-section" id="bgSection">
-            <div class="section-title">🎨 背景颜色</div>
-            <div class="bg-grid">
-                <div class="bg-option bg-white" data-bg="white" onclick="selectBg(this)" title="白色"></div>
-                <div class="bg-option bg-blue selected" data-bg="#3498db" onclick="selectBg(this)" title="蓝色"></div>
-                <div class="bg-option bg-red" data-bg="#e74c3c" onclick="selectBg(this)" title="红色"></div>
-            </div>
+        <div id="previewWrap" class="preview-wrap" style="display:none">
+            <img id="previewImg" src="" alt="预览">
+            <br>
+            <button class="change-btn" onclick="document.getElementById('fileInput').click()">🔄 更换照片</button>
         </div>
+        <input type="file" id="fileInput" accept="image/*" onchange="handleFile(event)">
+    </div>
 
-        <!-- Print Layout -->
-        <div class="print-section" id="printSection">
-            <div class="section-title">🖨️ 打印排版</div>
-            <div class="print-grid">
-                <div class="print-option selected" data-print="1" onclick="selectPrint(this)">
-                    <div class="print-name">1张</div>
-                    <div class="print-detail">单张</div>
-                </div>
-                <div class="print-option" data-print="2" onclick="selectPrint(this)">
-                    <div class="print-name">2张</div>
-                    <div class="print-detail">2×1</div>
-                </div>
-                <div class="print-option" data-print="4" onclick="selectPrint(this)">
-                    <div class="print-name">4张</div>
-                    <div class="print-detail">2×2</div>
-                </div>
-                <div class="print-option" data-print="6" onclick="selectPrint(this)">
-                    <div class="print-name">6张</div>
-                    <div class="print-detail">2×3</div>
-                </div>
-                <div class="print-option" data-print="8" onclick="selectPrint(this)">
-                    <div class="print-name">8张</div>
-                    <div class="print-detail">2×4</div>
-                </div>
-                <div class="print-option" data-print="9" onclick="selectPrint(this)">
-                    <div class="print-name">9张</div>
-                    <div class="print-detail">3×3</div>
-                </div>
-            </div>
-        </div>
+    <!-- ② 证件照尺寸 -->
+    <div class="card">
+        <div class="card-title">② 证件照尺寸</div>
+        <div class="option-grid cols-2" id="sizeGrid"></div>
+    </div>
 
-        <!-- Actions -->
-        <div class="actions" id="actions" style="display:none">
-            <button class="action-btn primary" onclick="downloadImage()">
-                💾 保存照片
-            </button>
-        </div>
+    <!-- ③ 背景颜色 -->
+    <div class="card">
+        <div class="card-title">③ 背景颜色</div>
+        <div class="bg-row" id="bgRow"></div>
+    </div>
 
-        <!-- Info -->
-        <div class="sizes-info">
-            <div class="info-card">
-                <div class="info-title">📋 常见证件尺寸参考</div>
-                <ul class="info-list">
-                    <li><strong>1寸</strong>：25×35mm = 295×413px (300dpi) - 常用报名照</li>
-                    <li><strong>2寸</strong>：35×49mm = 413×579px - 简历、入学</li>
-                    <li><strong>小1寸</strong>：22×32mm = 260×378px - 驾驶证</li>
-                    <li><strong>大一寸</strong>：33×48mm = 390×567px - 身份证、护照</li>
-                    <li><strong>签证</strong>：美国51×51mm，日本45×45mm，欧洲35×45mm</li>
-                </ul>
+    <!-- ④ 相纸大小 -->
+    <div class="card">
+        <div class="card-title">④ 相纸大小</div>
+        <div class="option-grid cols-2" id="paperGrid"></div>
+    </div>
+
+    <!-- ⑤ 生成按钮 -->
+    <div class="card full-width" style="padding:16px">
+        <button class="gen-btn" id="genBtn" onclick="generate()" disabled>
+            🖨️ 生成证件照（自动满铺排版）
+        </button>
+    </div>
+
+    <!-- ⑥ 结果 -->
+    <div class="card full-width" id="resultCard" style="display:none">
+        <div class="card-title">⑥ 排版结果</div>
+        <div class="result-wrap">
+            <canvas id="resultCanvas"></canvas>
+            <div class="result-info" id="resultInfo"></div>
+            <div class="result-actions">
+                <button class="dl-btn primary" onclick="download()">💾 下载图片</button>
+                <button class="dl-btn secondary" onclick="document.getElementById('resultCard').style.display='none'">✕ 关闭</button>
             </div>
         </div>
     </div>
 
-    <!-- Result Modal -->
-    <div class="result-modal" id="resultModal">
-        <button class="result-close" onclick="closeResult()">✕</button>
-        <img id="resultImage" class="result-image" src="" alt="Result">
-        <div class="result-actions">
-            <button class="result-btn primary" onclick="saveResult()">💾 保存到手机</button>
-            <button class="result-btn secondary" onclick="closeResult()">关闭</button>
+    <!-- 尺寸参考 -->
+    <div class="card full-width">
+        <div class="card-title">📋 常见证件尺寸参考</div>
+        <table class="info-table">
+            <tr><th>名称</th><th>尺寸(mm)</th><th>像素(300dpi)</th><th>用途</th></tr>
+            <tr><td>1寸</td><td>25×35</td><td>295×413</td><td>常用报名照</td></tr>
+            <tr><td>2寸</td><td>35×49</td><td>413×579</td><td>简历、入学</td></tr>
+            <tr><td>小1寸</td><td>22×32</td><td>260×378</td><td>驾驶证</td></tr>
+            <tr><td>大一寸</td><td>33×48</td><td>390×567</td><td>身份证、护照</td></tr>
+            <tr><td>美国签证</td><td>51×51</td><td>602×602</td><td>美签</td></tr>
+            <tr><td>日本签证</td><td>45×45</td><td>531×531</td><td>日签</td></tr>
+            <tr><td>欧洲签证</td><td>35×45</td><td>413×531</td><td>申根签</td></tr>
+            <tr><td>简历照</td><td>35×45</td><td>413×531</td><td>求职简历</td></tr>
+        </table>
+    </div>
+
+</div>
+
+<div class="loading" id="loading">
+    <div class="spinner"></div>
+    <p>正在处理，请稍候…</p>
+</div>
+
+<canvas id="offscreen" style="display:none"></canvas>
+
+<script>
+// ─────────────────────────────────────────────
+// 数据配置
+// ─────────────────────────────────────────────
+const SIZES = [
+    { name:'1寸',      w:25, h:35, badge:'常用' },
+    { name:'2寸',      w:35, h:49, badge:'常用' },
+    { name:'小1寸',    w:22, h:32, badge:'驾照' },
+    { name:'大一寸',   w:33, h:48, badge:'身份证' },
+    { name:'护照',     w:33, h:48, badge:'白底' },
+    { name:'美国签证', w:51, h:51, badge:'白底' },
+    { name:'日本签证', w:45, h:45, badge:'白底' },
+    { name:'欧洲签证', w:35, h:45, badge:'申根' },
+    { name:'简历照',   w:35, h:45, badge:'蓝底' },
+    { name:'自定义',   w:0,  h:0,  badge:'自填' },
+];
+
+const BG_COLORS = [
+    { name:'白底', color:'#FFFFFF', cls:'bg-white' },
+    { name:'蓝底', color:'#3498db', cls:'bg-blue'  },
+    { name:'红底', color:'#e74c3c', cls:'bg-red'   },
+];
+
+// 相纸尺寸（mm）
+const PAPERS = [
+    { name:'3寸',  w:89,  h:127, badge:'常用' },
+    { name:'4寸',  w:102, h:152, badge:'最常用' },
+    { name:'5寸',  w:127, h:178, badge:'常用' },
+    { name:'6寸',  w:152, h:102, badge:'横版' },
+    { name:'A4',   w:210, h:297, badge:'打印' },
+    { name:'A5',   w:148, h:210, badge:'打印' },
+];
+
+// ─────────────────────────────────────────────
+// 状态
+// ─────────────────────────────────────────────
+let state = {
+    image: null,          // HTMLImageElement
+    sizeIdx: 0,
+    bgIdx: 1,             // 默认蓝底
+    paperIdx: 1,          // 默认4寸
+    customW: 0,
+    customH: 0,
+};
+
+// ─────────────────────────────────────────────
+// 渲染选项
+// ─────────────────────────────────────────────
+function renderSizes() {
+    const grid = document.getElementById('sizeGrid');
+    grid.innerHTML = SIZES.map((s, i) => `
+        <div class="opt ${i===state.sizeIdx?'selected':''}" onclick="selectSize(${i})">
+            <div class="opt-name">${s.name}</div>
+            <div class="opt-sub">${s.w&&s.h ? s.w+'×'+s.h+' mm' : '自定义'}</div>
+            <span class="opt-badge">${s.badge}</span>
         </div>
-    </div>
+    `).join('') + `
+        <div id="customInputs" style="grid-column:1/-1;display:${state.sizeIdx===SIZES.length-1?'flex':'none'};gap:8px;margin-top:4px;align-items:center">
+            <input id="cwInput" type="number" placeholder="宽(mm)" style="flex:1;padding:8px;border:2px solid #e0e6ed;border-radius:8px;font-size:14px" oninput="updateCustom()">
+            <span style="color:#636e72">×</span>
+            <input id="chInput" type="number" placeholder="高(mm)" style="flex:1;padding:8px;border:2px solid #e0e6ed;border-radius:8px;font-size:14px" oninput="updateCustom()">
+        </div>
+    `;
+}
 
-    <!-- Loading -->
-    <div class="loading" id="loading">
-        <div class="loading-spinner"></div>
-        <div class="loading-text">正在处理...</div>
-    </div>
+function renderBg() {
+    const row = document.getElementById('bgRow');
+    row.innerHTML = BG_COLORS.map((b, i) => `
+        <div class="bg-item">
+            <div class="bg-circle ${b.cls} ${i===state.bgIdx?'selected':''}" onclick="selectBg(${i})"></div>
+            <div class="bg-label">${b.name}</div>
+        </div>
+    `).join('');
+}
 
-    <canvas id="canvas"></canvas>
+function renderPapers() {
+    const grid = document.getElementById('paperGrid');
+    grid.innerHTML = PAPERS.map((p, i) => `
+        <div class="opt ${i===state.paperIdx?'selected':''}" onclick="selectPaper(${i})">
+            <div class="opt-name">${p.name}</div>
+            <div class="opt-sub">${p.w}×${p.h} mm</div>
+            <span class="opt-badge">${p.badge}</span>
+        </div>
+    `).join('');
+}
 
-    <script>
-        let originalImage = null;
-        let processedImage = null;
-        let selectedSize = { width: 25, height: 35, name: '1寸' };
-        let selectedBg = '#3498db';
-        let selectedPrint = 1;
+function selectSize(i) {
+    state.sizeIdx = i;
+    renderSizes();
+    checkReady();
+}
+function selectBg(i) {
+    state.bgIdx = i;
+    renderBg();
+}
+function selectPaper(i) {
+    state.paperIdx = i;
+    renderPapers();
+}
+function updateCustom() {
+    state.customW = parseFloat(document.getElementById('cwInput').value) || 0;
+    state.customH = parseFloat(document.getElementById('chInput').value) || 0;
+    checkReady();
+}
 
-        // File select
-        function handleFileSelect(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    originalImage = new Image();
-                    originalImage.onload = function() {
-                        document.getElementById('previewImage').src = e.target.result;
-                        document.getElementById('previewSection').style.display = 'block';
-                        document.getElementById('actions').style.display = 'flex';
-                    };
-                    originalImage.src = e.target.result;
-                };
-                reader.readAsDataURL(file);
+// ─────────────────────────────────────────────
+// 文件上传
+// ─────────────────────────────────────────────
+function handleFile(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+        const img = new Image();
+        img.onload = () => {
+            state.image = img;
+            document.getElementById('previewImg').src = ev.target.result;
+            document.getElementById('uploadArea').style.display = 'none';
+            document.getElementById('previewWrap').style.display = 'block';
+            checkReady();
+        };
+        img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
+// Drag & drop
+const ua = document.getElementById('uploadArea');
+ua.addEventListener('dragover', e => { e.preventDefault(); ua.classList.add('dragover'); });
+ua.addEventListener('dragleave', () => ua.classList.remove('dragover'));
+ua.addEventListener('drop', e => {
+    e.preventDefault(); ua.classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+        document.getElementById('fileInput').files = e.dataTransfer.files;
+        handleFile({ target: { files: [file] } });
+    }
+});
+
+function checkReady() {
+    const s = SIZES[state.sizeIdx];
+    const hasSize = s.w && s.h || (state.sizeIdx === SIZES.length-1 && state.customW && state.customH);
+    document.getElementById('genBtn').disabled = !(state.image && hasSize);
+}
+
+// ─────────────────────────────────────────────
+// 核心：生成排版
+// ─────────────────────────────────────────────
+const DPI = 300;
+const MM2PX = DPI / 25.4;   // 1mm → px (300dpi)
+const GAP_MM = 2;            // 照片间距 2mm
+
+function mmToPx(mm) { return Math.round(mm * MM2PX); }
+
+function generate() {
+    if (!state.image) return;
+
+    const sizeData = SIZES[state.sizeIdx];
+    const photoW_mm = sizeData.w || state.customW;
+    const photoH_mm = sizeData.h || state.customH;
+    const paper = PAPERS[state.paperIdx];
+    const bgColor = BG_COLORS[state.bgIdx].color;
+
+    if (!photoW_mm || !photoH_mm) {
+        alert('请填写自定义尺寸');
+        return;
+    }
+
+    document.getElementById('loading').classList.add('show');
+
+    setTimeout(() => {
+        try {
+            // ── 1. 裁剪并缩放单张照片到精确像素 ──
+            const photoW_px = mmToPx(photoW_mm);
+            const photoH_px = mmToPx(photoH_mm);
+
+            const singleCanvas = document.createElement('canvas');
+            singleCanvas.width  = photoW_px;
+            singleCanvas.height = photoH_px;
+            const sCtx = singleCanvas.getContext('2d');
+
+            // 填充背景色
+            sCtx.fillStyle = bgColor;
+            sCtx.fillRect(0, 0, photoW_px, photoH_px);
+
+            // 居中裁剪原图（保持比例，填满目标区域）
+            const src = state.image;
+            const srcRatio = src.width / src.height;
+            const dstRatio = photoW_px / photoH_px;
+            let sx, sy, sw, sh;
+            if (srcRatio > dstRatio) {
+                sh = src.height;
+                sw = sh * dstRatio;
+                sx = (src.width - sw) / 2;
+                sy = 0;
+            } else {
+                sw = src.width;
+                sh = sw / dstRatio;
+                sx = 0;
+                sy = (src.height - sh) / 2;
             }
-        }
+            sCtx.drawImage(src, sx, sy, sw, sh, 0, 0, photoW_px, photoH_px);
 
-        // Drag and drop
-        const uploadArea = document.getElementById('uploadArea');
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('dragover');
-        });
-        uploadArea.addEventListener('dragleave', () => {
-            uploadArea.classList.remove('dragover');
-        });
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-            const file = e.dataTransfer.files[0];
-            if (file && file.type.startsWith('image/')) {
-                document.getElementById('fileInput').files = e.dataTransfer.files;
-                handleFileSelect({ target: { files: [file] } });
-            }
-        });
+            // ── 2. 计算相纸上能放几行几列 ──
+            const paperW_px = mmToPx(paper.w);
+            const paperH_px = mmToPx(paper.h);
+            const gap_px    = mmToPx(GAP_MM);
+            const margin_px = mmToPx(3); // 3mm 边距
 
-        // Select size
-        function selectSize(el) {
-            document.querySelectorAll('.size-option').forEach(opt => opt.classList.remove('selected'));
-            el.classList.add('selected');
-            selectedSize = {
-                width: parseInt(el.dataset.width),
-                height: parseInt(el.dataset.height),
-                name: el.dataset.size
-            };
-        }
+            const usableW = paperW_px - margin_px * 2;
+            const usableH = paperH_px - margin_px * 2;
 
-        // Select background
-        function selectBg(el) {
-            document.querySelectorAll('.bg-option').forEach(opt => opt.classList.remove('selected'));
-            el.classList.add('selected');
-            selectedBg = el.dataset.bg;
-        }
+            const cols = Math.floor((usableW + gap_px) / (photoW_px + gap_px));
+            const rows = Math.floor((usableH + gap_px) / (photoH_px + gap_px));
 
-        // Select print layout
-        function selectPrint(el) {
-            document.querySelectorAll('.print-option').forEach(opt => opt.classList.remove('selected'));
-            el.classList.add('selected');
-            selectedPrint = parseInt(el.dataset.print);
-        }
-
-        // Process image
-        function processImage() {
-            if (!originalImage) {
-                alert('请先上传照片');
+            if (cols < 1 || rows < 1) {
+                alert(`相纸太小，无法放下 ${sizeData.name || '自定义'} 照片，请换大相纸`);
+                document.getElementById('loading').classList.remove('show');
                 return;
             }
 
-            showLoading();
+            const total = cols * rows;
 
-            setTimeout(() => {
-                const canvas = document.getElementById('canvas');
-                const ctx = canvas.getContext('2d');
+            // ── 3. 绘制相纸 ──
+            const canvas = document.getElementById('resultCanvas');
+            // 显示时缩放到最大 800px 宽，但保存时用原始分辨率
+            const scale = Math.min(1, 800 / paperW_px);
+            canvas.width  = paperW_px;
+            canvas.height = paperH_px;
+            canvas.style.width  = Math.round(paperW_px  * scale) + 'px';
+            canvas.style.height = Math.round(paperH_px * scale) + 'px';
 
-                // DPI
-                const dpi = 300;
-                const mmToPx = dpi / 25.4;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, paperW_px, paperH_px);
 
-                // Calculate size
-                const targetWidth = selectedSize.width * mmToPx * 2; // 2x for quality
-                const targetHeight = selectedSize.height * mmToPx * 2;
+            // 居中排列
+            const totalW = cols * photoW_px + (cols - 1) * gap_px;
+            const totalH = rows * photoH_px + (rows - 1) * gap_px;
+            const startX = Math.round((paperW_px - totalW) / 2);
+            const startY = Math.round((paperH_px - totalH) / 2);
 
-                // Set canvas size (print size)
-                const cols = Math.ceil(Math.sqrt(selectedPrint));
-                const rows = Math.ceil(selectedPrint / cols);
-                const padding = 20 * mmToPx / 4; // 20mm padding
-
-                canvas.width = cols * targetWidth + (cols + 1) * padding;
-                canvas.height = rows * targetHeight + (rows + 1) * padding;
-
-                // White background for print
-                ctx.fillStyle = 'white';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                // Draw photos
-                for (let i = 0; i < selectedPrint; i++) {
-                    const col = i % cols;
-                    const row = Math.floor(i / cols);
-                    const x = padding + col * (targetWidth + padding);
-                    const y = padding + row * (targetHeight + padding);
-
-                    // Create temp canvas for image processing
-                    const tempCanvas = document.createElement('canvas');
-                    tempCanvas.width = targetWidth;
-                    tempCanvas.height = targetHeight;
-                    const tempCtx = tempCanvas.getContext('2d');
-
-                    // Draw background
-                    if (selectedBg === 'white') {
-                        tempCtx.fillStyle = 'white';
-                    } else {
-                        tempCtx.fillStyle = selectedBg;
-                    }
-                    tempCtx.fillRect(0, 0, targetWidth, targetHeight);
-
-                    // Calculate crop area (center crop, keep aspect ratio)
-                    const imgRatio = originalImage.width / originalImage.height;
-                    const targetRatio = targetWidth / targetHeight;
-
-                    let sx, sy, sw, sh;
-                    if (imgRatio > targetRatio) {
-                        sh = originalImage.height;
-                        sw = sh * targetRatio;
-                        sx = (originalImage.width - sw) / 2;
-                        sy = 0;
-                    } else {
-                        sw = originalImage.width;
-                        sh = sw / targetRatio;
-                        sx = 0;
-                        sy = (originalImage.height - sh) / 2;
-                    }
-
-                    // Draw image
-                    tempCtx.drawImage(originalImage, sx, sy, sw, sh, 0, 0, targetWidth, targetHeight);
-
-                    // Draw to main canvas
-                    ctx.drawImage(tempCanvas, x, y);
-
-                    // Border
-                    ctx.strokeStyle = '#ddd';
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    const x = startX + c * (photoW_px + gap_px);
+                    const y = startY + r * (photoH_px + gap_px);
+                    ctx.drawImage(singleCanvas, x, y, photoW_px, photoH_px);
+                    // 细边框
+                    ctx.strokeStyle = 'rgba(0,0,0,0.08)';
                     ctx.lineWidth = 1;
-                    ctx.strokeRect(x, y, targetWidth, targetHeight);
+                    ctx.strokeRect(x, y, photoW_px, photoH_px);
                 }
+            }
 
-                processedImage = canvas.toDataURL('image/jpeg', 0.95);
+            // ── 4. 显示结果 ──
+            document.getElementById('resultCard').style.display = 'block';
+            document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth' });
 
-                hideLoading();
-                showResult();
-            }, 500);
+            document.getElementById('resultInfo').innerHTML = `
+                <span class="result-tag">📐 ${sizeData.name || '自定义'} ${photoW_mm}×${photoH_mm}mm</span>
+                <span class="result-tag">🎨 ${BG_COLORS[state.bgIdx].name}</span>
+                <span class="result-tag">📄 ${paper.name}相纸 ${paper.w}×${paper.h}mm</span>
+                <span class="result-tag">🖼️ 共 ${total} 张（${cols}列×${rows}行）</span>
+                <span class="result-tag">🔍 ${DPI}dpi 高清</span>
+            `;
+
+        } catch(err) {
+            alert('处理失败：' + err.message);
         }
+        document.getElementById('loading').classList.remove('show');
+    }, 80);
+}
 
-        function showResult() {
-            document.getElementById('resultImage').src = processedImage;
-            document.getElementById('resultModal').classList.add('active');
-        }
+// ─────────────────────────────────────────────
+// 下载
+// ─────────────────────────────────────────────
+function download() {
+    const canvas = document.getElementById('resultCanvas');
+    const sizeData = SIZES[state.sizeIdx];
+    const paper = PAPERS[state.paperIdx];
+    const bgName = BG_COLORS[state.bgIdx].name;
+    const link = document.createElement('a');
+    link.download = `证件照_${sizeData.name}_${bgName}_${paper.name}相纸.jpg`;
+    link.href = canvas.toDataURL('image/jpeg', 0.95);
+    link.click();
+}
 
-        function closeResult() {
-            document.getElementById('resultModal').classList.remove('active');
-        }
-
-        function saveResult() {
-            const link = document.createElement('a');
-            link.download = `证件照_${selectedSize.name}_${selectedBg === 'white' ? '白底' : selectedBg === '#3498db' ? '蓝底' : '红底'}.jpg`;
-            link.href = processedImage;
-            link.click();
-        }
-
-        function downloadImage() {
-            processImage();
-        }
-
-        function showLoading() {
-            document.getElementById('loading').classList.add('active');
-        }
-
-        function hideLoading() {
-            document.getElementById('loading').classList.remove('active');
-        }
-    </script>
+// ─────────────────────────────────────────────
+// 初始化
+// ─────────────────────────────────────────────
+renderSizes();
+renderBg();
+renderPapers();
+</script>
 </body>
 </html>
